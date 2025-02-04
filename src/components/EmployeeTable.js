@@ -12,7 +12,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete,assignToDepartment }) => {
+const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
   const [show, setShow] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { getAccessTokenSilently ,isAuthenticated} = useAuth0();
@@ -49,13 +49,7 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete,assignToD
     filter: true,
   };
 
-  const handleDepartmentChange = async (params) => {
-    const employeeId = params.data._id; // Get Employee ID
-    const departmentId = params.newValue; // Get Selected Department ID
-    assignToDepartment(employeeId,departmentId)
 
-    
-  };
  
   const colDefs = [
     { field: "name", headerName: "Name" },
@@ -77,7 +71,7 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete,assignToD
           return true;
         },
       
-      onCellValueChanged: handleDepartmentChange,
+     
     },
     {
       field: "isActive",

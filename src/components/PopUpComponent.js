@@ -15,23 +15,18 @@ import {
 const PopUpComponent = ({ show, setShow, selectedEmployee, onSave ,department}) => {
   const [employee, setEmployee] = useState({
     name: "",
-    email: "",
-    
+    email: "",  
     isActive: false,
   });
-
-  useEffect(() => {
-    if (selectedEmployee) {
-      setEmployee(selectedEmployee);
-    } else {
-      setEmployee({ name: "", email: "",  isActive: false });
-    }
-  }, [selectedEmployee]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEmployee({ ...employee, [name]: value });
-  };
+ 
+    useEffect(() => {
+      setEmployee(selectedEmployee || { name: "", email: "", departmentId: "", isActive: false });
+    }, [selectedEmployee, show]);
+  
+    const handleChange = (e) => {
+      const {name,value} = e.target
+      setEmployee({ ...employee, [name]: value });
+    };
 
   const handleToggle = () => {
     setEmployee({ ...employee, isActive: !employee.isActive });

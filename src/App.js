@@ -4,7 +4,7 @@ import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { AppBar, Toolbar, Button, Container } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import Home from "./pages/Home";
-import ApiData from "./pages/ApiData";
+
 import Profile from "./pages/Profile";
 import EmployeeRecordPage from "./pages/EmployeeRecordPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -85,8 +85,7 @@ const App = () => {
         <Container sx={{ mt: 4 }}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/api" element={<ProtectedRoute component={<ApiData />} />} />
-            <Route path="/emp" element={<EmployeeRecordPage />} />
+            <Route path="/emp" element={<ProtectedRoute component={ <EmployeeRecordPage /> } />} />
             <Route path="/profile" element={<ProtectedRoute component={<Profile />} />} />
           </Routes>
         </Container>

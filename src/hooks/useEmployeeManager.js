@@ -13,7 +13,6 @@ const useEmployeeManager = () => {
 
   const closeSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
-  // Save token to localStorage when authenticated
   useEffect(() => {
     const saveToken = async () => {
       if (isAuthenticated) {
@@ -29,7 +28,6 @@ const useEmployeeManager = () => {
     saveToken();
   }, [isAuthenticated, getAccessTokenSilently]);
 
-  // Memoize fetchEmployees to avoid recreating it on every render
   const fetchEmployees = useCallback(async () => {
     try {
       const token = localStorage.getItem("access_token");
@@ -51,7 +49,7 @@ const useEmployeeManager = () => {
   
   useEffect(() => {
     fetchEmployees();
-  }, [fetchEmployees]); // Only run when fetchEmployees changes
+  }, [fetchEmployees]);
 
   const handleAddOrUpdate = useCallback(
     async (employee, isUpdate) => {
@@ -72,7 +70,7 @@ const useEmployeeManager = () => {
           });
           setSnackbar({ open: true, message: "Employee added!", severity: "success" });
         }
-        fetchEmployees(); // Refresh the employee list after adding/updating
+        fetchEmployees();
       } catch (error) {
         setSnackbar({
           open: true,
@@ -82,7 +80,7 @@ const useEmployeeManager = () => {
         console.error("Error saving employee:", error);
       }
     },
-    [fetchEmployees] // Only recreate if fetchEmployees changes
+    [fetchEmployees]
   );
 
   const handleDelete = useCallback(
@@ -95,7 +93,7 @@ const useEmployeeManager = () => {
           },
         });
         setSnackbar({ open: true, message: "Employee deleted!", severity: "success" });
-        fetchEmployees(); // Refresh the employee list after deleting
+        fetchEmployees(); 
       } catch (error) {
         setSnackbar({
           open: true,
@@ -105,10 +103,8 @@ const useEmployeeManager = () => {
         console.error("Error deleting employee:", error);
       }
     },
-    [fetchEmployees] // Only recreate if fetchEmployees changes
+    [fetchEmployees] 
   );
-
- 
 
   return {
     employees,

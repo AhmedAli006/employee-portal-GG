@@ -13,7 +13,6 @@ const useEmployeeManager = () => {
 
   const closeSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
-  // Save token to localStorage when authenticated
   useEffect(() => {
     const saveToken = async () => {
       if (isAuthenticated) {
@@ -29,9 +28,6 @@ const useEmployeeManager = () => {
     saveToken();
   }, [isAuthenticated, getAccessTokenSilently]);
 
-//   console.log(Department)
-
-  // Memoize fetchDepartment to avoid recreating it on every render
   const fetchDepartment = useCallback(async () => {
     try {
       const token = localStorage.getItem("access_token");
@@ -49,22 +45,17 @@ const useEmployeeManager = () => {
       });
       console.error("Error fetching employee records:", error);
     }
-  }, []); // No dependencies, so it won't recreate unless necessary
+  }, []); 
 
-  // Fetch Department when the component mounts or fetchDepartment changes
   useEffect(() => {
     fetchDepartment();
   }, [fetchDepartment]); // Only run when fetchDepartment changes
-
-
 
   return {
     department,
     snackbar,
     closeSnackbar,
     fetchDepartment,
-    
-    
   };
 };
 
