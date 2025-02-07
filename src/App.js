@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { AppBar, Toolbar, Button, Container } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
@@ -10,9 +10,13 @@ import EmployeeRecordPage from "./pages/EmployeeRecordPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthButtons from "./components/AuthButtons";
 import authConfig from "./auth_config.json";
+import useEmployeeApp from "./hooks/UseEmployeeApp";
+import NavbarComponent from "./components/NavBarComponent";
 
 const App = () => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const [router, setRouter] = useState(null);
+  
   useEffect(() => {
     const saveToken = async () => {
       if (isAuthenticated) {
@@ -29,6 +33,12 @@ const App = () => {
 
     saveToken();
   }, [isAuthenticated, getAccessTokenSilently]);
+  const { loadRoutes } = useEmployeeApp();
+  useEffect(()=>{
+    const routes = loadRoutes(); 
+    const routerDefinations = createBrowserRouter(routes);
+    setRouter(routerDefinations);
+  },[])
   return (
     <Auth0Provider
       domain={authConfig.domain}
@@ -38,58 +48,8 @@ const App = () => {
         redirect_uri: window.location.origin,
         audience: "https://localhost:7039/",
       }}
-    >
-      <Router>
-        {/* Navigation Bar */}
-        <AppBar position="static">
-          <Toolbar>
-            <Button
-              component={RouterLink}
-              to="/"
-              color="inherit"
-              sx={{ textTransform: "none" }}
-            >
-              Home
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/api"
-              color="inherit"
-              sx={{ textTransform: "none" }}
-            >
-              API Page
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/profile"
-              color="inherit"
-              sx={{ textTransform: "none" }}
-            >
-              Profile
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/emp"
-              color="inherit"
-              sx={{ textTransform: "none" }}
-            >
-              Employees
-            </Button>
-            <div style={{ marginLeft: "auto" }}>
-              <AuthButtons />
-            </div>
-          </Toolbar>
-        </AppBar>
-
-        {/* Main Content */}
-        <Container sx={{ mt: 4 }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/emp" element={<ProtectedRoute component={ <EmployeeRecordPage /> } />} />
-            <Route path="/profile" element={<ProtectedRoute component={<Profile />} />} />
-          </Routes>
-        </Container>
-      </Router>
+    > 
+      {router && <RouterProvider router={router} />}
     </Auth0Provider>
   );
 };

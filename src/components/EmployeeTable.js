@@ -9,14 +9,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import PopUpComponent from "../components/PopUpComponent";
 import { useAuth0 } from "@auth0/auth0-react";
+import useEmployeeManager from "../hooks/useEmployeeManager";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
+const EmployeeTable = ({ department = [], employees = [] }) => {
   const [show, setShow] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { getAccessTokenSilently ,isAuthenticated} = useAuth0();
+  const { handleDelete, handleCreateOrUpdate } = useEmployeeManager();
 
+  
  useEffect(() => {
   const saveToken = async () => {
     if (isAuthenticated) {
@@ -31,16 +34,16 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
 
   saveToken();
 }, [isAuthenticated, getAccessTokenSilently]);
-  const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-    setShow(true);
-  };
 
-  const handleAdd = () => {
-    setSelectedEmployee(null);
-    setShow(true);
-  };
-  
+const onEdit = (employee) => {
+  setSelectedEmployee(employee);
+  setShow(true);
+};
+
+const handleAdd = () => {
+  setSelectedEmployee(null);
+  setShow(true);
+};
 
   const defaultColDef = {
     flex: 1,
@@ -49,8 +52,6 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
     filter: true,
   };
 
-
- 
   const colDefs = [
     { field: "name", headerName: "Name" },
     { field: "email", headerName: "Email" },
@@ -69,9 +70,7 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
         valueSetter: (params) => {
           params.data.departmentId = params.newValue;
           return true;
-        },
-      
-     
+        },     
     },
     {
       field: "isActive",
@@ -84,7 +83,9 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
         <div>
           <IconButton
             color="success"
-            onClick={() => handleEdit(params.data)}
+            onClick={() => {
+              onEdit(params.data) 
+            }}
             style={{ marginRight: "5px" }}
           >
             <EditIcon />
@@ -95,7 +96,7 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
               if (
                 window.confirm("Are you sure you want to delete this employee?")
               ) {
-                onDelete(params.data._id);
+                handleDelete(params.data._id)
               }
             }}
           >
@@ -132,7 +133,7 @@ const EmployeeTable = ({department, employees, onAddOrUpdate, onDelete, }) => {
         show={show}
         setShow={setShow}
         selectedEmployee={selectedEmployee}
-        onSave={onAddOrUpdate}
+        onSave={handleCreateOrUpdate}
         department={department}
       />
     </>

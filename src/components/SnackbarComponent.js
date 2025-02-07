@@ -19,10 +19,10 @@ const SnackbarComponent = () => {
       <Snackbar
         open={open}
         autoHideDuration={4000}
-        onClose={handleClose}
+        onClose={() => handleClose()}
         anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position
       >
-        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+        <Alert onClose={() =>handleClose()} severity="success" sx={{ width: "100%" }}>
           This is a success message!
         </Alert>
       </Snackbar>

@@ -1,17 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import API from "../config/API/Api";
+import { useCallback, useEffect, useState } from "react";
+import { getDepartments } from "../dispatcher/departmentDispatcher";
 
-const useEmployeeManager = () => {
+const useDepartmentManager = () => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
-  const [department, setDepartment] = useState([]);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [departments, setDepartments] = useState([]);
 
-  const closeSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
   useEffect(() => {
     const saveToken = async () => {
@@ -30,33 +24,25 @@ const useEmployeeManager = () => {
 
   const fetchDepartment = useCallback(async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await API.get("Department/get-all-departments", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setDepartment(response.data);
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch Department!",
-        severity: "error",
-      });
-      console.error("Error fetching employee records:", error);
-    }
-  }, []); 
+      const data = await getDepartments(); // Fetch data
+     
+      if (Array.isArray(data)) {
+        setDepartments(data); // Store it in state
+      } else {
+        console.error("Invalid department data:", data);
+        setDepartments([]);
+      }
+    } catch (err) {
+      console.error("Error fetching departments:", err);
+      
+    } 
+  }, []);
 
   useEffect(() => {
-    fetchDepartment();
-  }, [fetchDepartment]); // Only run when fetchDepartment changes
+    fetchDepartment(); 
+  }, [fetchDepartment]);
 
-  return {
-    department,
-    snackbar,
-    closeSnackbar,
-    fetchDepartment,
-  };
+  return { departments, fetchDepartment};
 };
 
-export default useEmployeeManager;
+export default useDepartmentManager;

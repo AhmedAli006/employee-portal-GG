@@ -1,17 +1,16 @@
-import { useState, useCallback, useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useAuth0 } from "@auth0/auth0-react";
-import API from "../config/API/Api";
+import {
+  closeSnackbar,
+  setSnackbar,
+} from "../features/EmployeeSlice";
+import { addEmployee, getEmployee, removeEmployee, updateEmployee } from "../dispatcher/employeeDispatcher";
 
 const useEmployeeManager = () => {
+  const dispatch = useDispatch();
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
-  const [employees, setEmployees] = useState([]);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const closeSnackbar = () => setSnackbar({ ...snackbar, open: false });
+  const { employees, snackbar } = useSelector((state) => state.employees);
 
   useEffect(() => {
     const saveToken = async () => {
@@ -28,92 +27,107 @@ const useEmployeeManager = () => {
     saveToken();
   }, [isAuthenticated, getAccessTokenSilently]);
 
-  const fetchEmployees = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await API.get("Employee/get-all-employees", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setEmployees(response.data);
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch employees!",
-        severity: "error",
-      });
-      console.error("Error fetching employee records:", error);
-    }
-  }, []); 
-  
-  useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+  const fetchEmployees = useCallback( async () => {
+   await getEmployee().then(()=>{
+              dispatch(
+                  setSnackbar({
+                      open: true,
+                      message: "Employees loaded successfully!",
+                      severity: "success",
+                    })
+                );
+            }).catch(()=>{
+                dispatch(
+                    setSnackbar({
+                      open: true,
+                      message: "Failed to fetch employees!",
+                      severity: "error",
+                    }));
+            });
+  }, [dispatch]);
 
-  const handleAddOrUpdate = useCallback(
-    async (employee, isUpdate) => {
+  const handleCloseSnackbar = useCallback(() => {
+    dispatch(closeSnackbar());
+  }, [dispatch]);
+
+  const handleDelete = useCallback(async (id) => {
+   await removeEmployee(id).then(()=>{
+      dispatch(
+          setSnackbar({
+              open: true,
+              message: "Employees deleted successfully!",
+              severity: "success",
+            })
+        ); 
+        getEmployee();
+    }).catch(()=>{
+        dispatch(
+            setSnackbar({
+              open: true,
+              message: "Failed to delete employees!",
+              severity: "error",
+            }));
+    });
+
+  }, [dispatch]);
+
+  const handleCreateOrUpdate = useCallback(
+   async  (employee, isUpdate) => {
       try {
-        const token = localStorage.getItem("access_token");
         if (isUpdate) {
-          await API.put(`Employee/update-employee/?id=${employee._id}`, employee, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          // await dispatch(updateEmployeeData({ id: employee._id, employee }));
+          await  updateEmployee({id: employee._id, employee}).then(()=>{
+            dispatch(
+                setSnackbar({
+                    open: true,
+                    message: "Employees Updated successfully!",
+                    severity: "success",
+                  })
+              );
+              getEmployee();
+          }).catch(()=>{
+              dispatch(
+                  setSnackbar({
+                    open: true,
+                    message: "Failed to update employees!",
+                    severity: "error",
+                  }));
           });
-          setSnackbar({ open: true, message: "Employee updated!", severity: "success" });
         } else {
-          await API.post("Employee/create-employee", employee, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          // await dispatch(createEmployeeData(employee));
+          await  addEmployee(employee).then(()=>{
+            dispatch(
+                setSnackbar({
+                    open: true,
+                    message: "Employees added successfully!",
+                    severity: "success",
+                  })
+              );
+              getEmployee();
+          }).catch(()=>{
+              dispatch(
+                  setSnackbar({
+                    open: true,
+                    message: "Failed to add employees!",
+                    severity: "error",
+                  }));
           });
-          setSnackbar({ open: true, message: "Employee added!", severity: "success" });
         }
-        fetchEmployees();
+        
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Failed to save employee!",
-          severity: "error",
-        });
         console.error("Error saving employee:", error);
       }
     },
-    [fetchEmployees]
-  );
-
-  const handleDelete = useCallback(
-    async (id) => {
-      try {
-        const token = localStorage.getItem("access_token");
-        await API.delete(`Employee/delete-employee/?id=${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setSnackbar({ open: true, message: "Employee deleted!", severity: "success" });
-        fetchEmployees(); 
-      } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Failed to delete employee!",
-          severity: "error",
-        });
-        console.error("Error deleting employee:", error);
-      }
-    },
-    [fetchEmployees] 
+    [dispatch]
   );
 
   return {
     employees,
     snackbar,
-    closeSnackbar,
+    closeSnackbar: handleCloseSnackbar,
     fetchEmployees,
-    handleAddOrUpdate,
     handleDelete,
-
+    handleCreateOrUpdate, // Unified function for both create & update
   };
 };
 
